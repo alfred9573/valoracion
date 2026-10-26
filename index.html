@@ -60,7 +60,7 @@ h1 em{font-style:normal;color:var(--accent)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
 .progress{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
 .progress .col{padding-block:12px;display:flex;flex-direction:column;gap:8px}
-.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.bars{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
 .bars button{height:6px;border:0;border-radius:3px;background:var(--line);padding:0;cursor:pointer}
 .bars button.done{background:var(--accent);opacity:.4}
 .bars button.on{background:var(--accent);opacity:1}
@@ -153,6 +153,24 @@ dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}
 .pill.wip{background:var(--warn-soft);color:var(--warn)}
 .resp .r{display:flex;gap:8px;align-items:center}
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shot{border:1px dashed var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.shot.ok{border-style:solid;border-color:var(--ok)}
+.shot.err{border-color:var(--danger)}
+.frame{width:100%;aspect-ratio:3/4;border-radius:8px;background:var(--bg);overflow:hidden;display:grid;place-items:center;color:var(--muted)}
+.frame img{width:100%;height:100%;object-fit:cover;display:block}
+.frame svg{width:42%;height:auto}
+.shot b{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:17px;line-height:1}
+.shot small{color:var(--muted);font-size:13px;line-height:1.3}
+.upl{position:relative;width:100%;overflow:hidden}
+.upl input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;font-size:0}
+.upl:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.ststat{font-size:13px;font-weight:600;min-height:18px}
+.ststat.ok{color:var(--ok)}.ststat.err{color:var(--danger)}.ststat.busy{color:var(--muted)}
+.tips{margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px}
+.outfit{display:flex;gap:10px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:15px}
+.outfit b{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--accent);white-space:nowrap}
+@media (max-width:420px){.shot{padding:8px}.shot small{display:none}.upl{padding-inline:6px}}
 footer{color:var(--muted);font-size:13px;text-align:center}
 @media (prefers-reduced-motion:no-preference){.card{animation:in .28s ease-out}@keyframes in{from{transform:translateY(8px)}to{transform:none}}}
 </style>
@@ -167,7 +185,7 @@ footer{color:var(--muted);font-size:13px;text-align:center}
     </div>
     <h1>Tu plan empieza <em>aquí</em></h1>
     <p class="lede">Con tus respuestas diseñamos tu entrenamiento y tu alimentación desde cero. Si no sabes algún dato, déjalo en blanco; solo lo marcado con <span style="color:var(--accent)">*</span> es obligatorio.</p>
-    <div class="meta"><span><b>10 min</b>aproximado</span><span><b>6</b>secciones</span><span><b>100%</b>confidencial</span></div>
+    <div class="meta"><span><b>10 min</b>aproximado</span><span><b>7</b>secciones</span><span><b>100%</b>confidencial</span></div>
   </div>
 </div>
 
@@ -190,6 +208,7 @@ const DAYS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 const S=[
  {name:"Datos",intro:"Mídete por la mañana, en ayunas y después de ir al baño. La cinta va pegada a la piel, sin apretar.",fields:[
   {id:"nombre",t:"text",l:"Nombre completo",req:1,s:"Nombre"},
+  {id:"sexo",t:"radio",l:"Sexo",req:1,s:"Sexo",o:["Mujer","Hombre"]},
   {grid:[
    {id:"edad",t:"num",l:"Edad",u:"años",req:1,s:"Edad"},
    {id:"estatura",t:"num",l:"Estatura",u:"cm",req:1,s:"Estatura"},
@@ -224,8 +243,8 @@ const S=[
   {id:"condiciones",t:"area",l:"Condiciones médicas",h:"Tiroides, SOP, presión, resistencia a la insulina, anemia, etc.",s:"Condiciones médicas"},
   {id:"medicamentos",t:"area",l:"Medicamentos o anticonceptivos que tomas",s:"Medicamentos / anticonceptivos"},
   {id:"suplementos",t:"area",l:"Suplementos que tomas hoy",h:"Proteína, creatina, vitaminas, quemadores…",s:"Suplementos actuales"},
-  {id:"ciclo",t:"radio",l:"¿Tu ciclo menstrual es regular?",s:"Ciclo menstrual",o:["Sí, regular","Irregular","No menstrúo por anticonceptivo","Prefiero no decir"]},
-  {id:"embarazo",t:"radio",l:"¿Estás embarazada, lactando o buscando embarazo?",s:"Embarazo / lactancia",o:["No","Sí"]},
+  {id:"ciclo",show:a=>a.sexo==="Mujer",t:"radio",l:"¿Tu ciclo menstrual es regular?",s:"Ciclo menstrual",o:["Sí, regular","Irregular","No menstrúo por anticonceptivo","Prefiero no decir"]},
+  {id:"embarazo",show:a=>a.sexo==="Mujer",t:"radio",l:"¿Estás embarazada, lactando o buscando embarazo?",s:"Embarazo / lactancia",o:["No","Sí"]},
   {id:"tca",t:"radio",l:"¿Has tenido algún trastorno de la conducta alimentaria?",s:"Antecedente TCA",o:["No","Sí","Prefiero platicarlo en persona"]}
  ]},
  {name:"Alimentación",intro:"Tu plan se arma con comida que te guste y que puedas conseguir fácil.",fields:[
@@ -244,12 +263,13 @@ const S=[
  ]},
  {name:"Hábitos",intro:"El descanso y el estrés pesan tanto como la rutina.",fields:[
   {id:"sueno",t:"radio",l:"¿Cuántas horas duermes?",s:"Sueño",o:["Menos de 6 h","6 a 7 h","7 a 8 h","Más de 8 h"]},
-  {id:"actividad",t:"radio",l:"Fuera del gym, tu día es…",s:"Actividad diaria",o:["Sentada casi todo el día","Mixto","De pie o en movimiento"]},
+  {id:"actividad",t:"radio",l:"Fuera del gym, tu día es…",s:"Actividad diaria",o:["Escritorio casi todo el día","Mixto","De pie o en movimiento"]},
   {id:"pasos",t:"radio",l:"Pasos al día",s:"Pasos",o:["Menos de 5,000","5,000 a 8,000","8,000 a 12,000","Más de 12,000","No sé"]},
-  {id:"estres",t:"scale",l:"Nivel de estrés",s:"Estrés (1–5)",lo:"Tranquila",hi:"Muy alto"},
+  {id:"estres",t:"scale",l:"Nivel de estrés",s:"Estrés (1–5)",lo:"Muy bajo",hi:"Muy alto"},
   {id:"adherencia",t:"scale",l:"¿Qué tan fácil se te hace seguir un plan?",s:"Facilidad para seguir plan (1–5)",lo:"Me cuesta",hi:"Muy fácil"},
   {id:"comentarios",t:"area",l:"¿Algo más que debamos saber?",s:"Comentarios"}
  ]},
+ {name:"Fotos",photos:1,intro:"Tres fotos de cuerpo completo para medir tu avance semana a semana. Solo las ve tu coach."},
  {name:"Revisar",final:1}
 ];
 const LAST=S.length-1;
@@ -266,7 +286,15 @@ const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify({a:st,r:reached
 let cloud=/^https:\/\/script\.google\.com\//.test(ENDPOINT), timer=null;
 
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const flat=sec=>sec.fields?sec.fields.flatMap(f=>f.grid?f.grid:[f]):[];
+const vis=f=>!f.show||f.show(st);
+const flat=sec=>sec.fields?sec.fields.flatMap(f=>f.grid?f.grid:[f]).filter(vis):[];
+const SHOTS=[{k:"frente",n:"Frente",d:"Brazos relajados a los lados"},{k:"perfil",n:"Perfil",d:"Lado derecho, brazos relajados"},{k:"espalda",n:"Espalda",d:"Talones juntos"}];
+const SIL={
+ frente:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>',
+ perfil:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="12" y="12" width="10" height="20" rx="5"/><rect x="15" y="13" width="4" height="17" rx="2"/><rect x="13" y="30" width="7" height="21" rx="3"/></svg>',
+ espalda:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>'};
+const thumbs={}, upl={};
+const fotosOk=()=>SHOTS.filter(x=>st.fotos&&st.fotos[x.k]).length;
 const $=id=>document.getElementById(id);
 const fmtVal=(f,v)=>{if(Array.isArray(v))v=v.join(", ");v=(v??"").toString().trim();if(!v)return"";return f.u==="%"?v+"%":f.u?v+" "+f.u:v};
 
@@ -294,7 +322,7 @@ function fieldHTML(f){
 /* ---------- Revisión / resumen ---------- */
 function reviewHTML(a,editable){
   return `<div class="rev">`+S.slice(0,LAST).map((sec,i)=>{
-    const rows=flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`<dt>${esc(f.s)}</dt><dd>${esc(v)}</dd>`:""}).join("");
+    const rows=sec.photos?SHOTS.map(x=>`<dt>${x.n}</dt><dd>${a.fotos&&a.fotos[x.k]?"Subida ✓":"Pendiente"}</dd>`).join(""):flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`<dt>${esc(f.s)}</dt><dd>${esc(v)}</dd>`:""}).join("");
     return `<div class="revsec"><div class="revhead"><h3>${esc(sec.name)}</h3>${editable?`<button type="button" class="btn small" data-edit="${i}">Editar</button>`:""}</div>${rows?`<dl>${rows}</dl>`:`<div class="empty">Sin respuestas</div>`}</div>`;
   }).join("")+`</div>`;
 }
@@ -304,14 +332,22 @@ function summary(a){
     const rows=flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`${f.s}: ${v}`:null}).filter(Boolean);
     if(rows.length){L.push("",`*${sec.name.toUpperCase()}*`,...rows)}
   });
+  L.push("","*FOTOS*","Las mando por este chat.");
   return L.join("\n");
 }
-const PHOTOS=`<div class="photos">
-  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>Frente<small>brazos a los lados</small></div>
-  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="12" y="12" width="10" height="20" rx="5"/><rect x="15" y="13" width="4" height="17" rx="2"/><rect x="13" y="30" width="7" height="21" rx="3"/></svg>Perfil<small>lado derecho</small></div>
-  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>Espalda<small>talones juntos</small></div>
-</div>`;
-const PHOTONOTE=`<div class="note"><b>Fotos de inicio.</b> Mándalas a tu coach por WhatsApp; no se suben aquí.<ul><li>En ayunas, con buena luz y fondo liso</li><li>Ropa deportiva ajustada o traje de baño</li><li>Relajada, sin posar; celular a la altura del pecho</li></ul></div>`;
+function photosHTML(){
+  const sx=st.sexo;
+  const outfit=sx==="Mujer"?"Short y top deportivo":sx==="Hombre"?"Bóxer o short corto, sin camiseta":"Mujeres: short y top deportivo. Hombres: bóxer, sin camiseta.";
+  const tips=`<ul class="tips"><li>Por la mañana, en ayunas</li><li>Luz de frente y fondo liso</li><li>Cuerpo completo, de la cabeza a los pies</li><li>Celular a la altura del pecho, a unos 2 metros: pide ayuda o usa el temporizador</li><li>Postura relajada, sin posar ni meter el abdomen</li>${sx==="Mujer"?"<li>Cabello recogido</li>":""}</ul>`;
+  const head=`<div class="outfit"><b>Ropa</b><span>${outfit}</span></div>${tips}`;
+  if(!cloud) return head+`<div class="callout">Mándale estas tres fotos a tu coach por WhatsApp.</div>`;
+  return head+`<div class="shots">`+SHOTS.map(x=>{
+    const done=st.fotos&&st.fotos[x.k], u=upl[x.k];
+    const cls=u==="err"?"err":done?"ok":"";
+    const stat=u==="busy"?'<span class="ststat busy">Subiendo…</span>':u==="err"?'<span class="ststat err">No se subió. Intenta de nuevo.</span>':done?'<span class="ststat ok">Subida ✓</span>':'<span class="ststat"></span>';
+    return `<div class="shot ${cls}"><div class="frame">${thumbs[x.k]?`<img src="${thumbs[x.k]}" alt="Foto de ${x.n.toLowerCase()}">`:SIL[x.k]}</div><b>${x.n}</b><small>${x.d}</small>
+      <span class="btn small upl">${done?"Cambiar":"Subir foto"}<input type="file" accept="image/*" data-up="${x.k}" aria-label="Subir foto de ${x.n.toLowerCase()}"${u==="busy"?" disabled":""}></span>${stat}</div>`}).join("")+`</div><div class="hint" style="margin-top:0">Si prefieres, puedes mandarlas después por WhatsApp.</div>`;
+}
 
 /* ---------- Render ---------- */
 function render(){
@@ -320,8 +356,8 @@ function render(){
     html=`<div class="card"><div class="done">
       <div class="check"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h2>¡Listo${st.nombre?", "+esc(String(st.nombre).trim().split(/\s+/)[0]):""}!</h2>
-      <p>Tu coach ya recibió tus respuestas. Con esto empieza a armar tu plan.</p></div>
-      <div class="cardbody" style="padding-top:0">${PHOTONOTE}${PHOTOS}
+      <p>Tu coach ya recibió tus respuestas${fotosOk()===3?" y tus fotos":""}. Con esto empieza a armar tu plan.</p></div>
+      <div class="cardbody" style="padding-top:0">${fotosOk()<3?`<div class="note">Te ${3-fotosOk()===1?"faltó 1 foto":"faltaron "+(3-fotosOk())+" fotos"}. Mándala${3-fotosOk()===1?"":"s"} a tu coach por WhatsApp o súbela${3-fotosOk()===1?"":"s"} desde "Revisar o corregir".</div>`:""}
       <button type="button" class="btn" id="reedit">Revisar o corregir mis respuestas</button></div></div>`;
   } else if(sec.final){
     const sendBlock=cloud
@@ -330,13 +366,16 @@ function render(){
         <textarea id="summary" readonly aria-label="Resumen">${esc(summary(st))}</textarea>
         <div class="actions"><a class="btn primary" href="https://wa.me/?text=${encodeURIComponent(summary(st))}" target="_blank" rel="noopener">Enviar por WhatsApp</a><button type="button" class="btn" id="copy">Copiar respuestas</button></div>
         <div class="toast" id="toast" aria-live="polite"></div>`;
-    html=`<div class="card"><div class="cardhead"><span class="num">07</span><div><h2>Revisa y envía</h2><p>Confirma que todo esté bien. Puedes editar cualquier sección.</p></div></div>
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(LAST+1).padStart(2,"0")}</span><div><h2>Revisa y envía</h2><p>Confirma que todo esté bien. Puedes editar cualquier sección.</p></div></div>
       <div class="cardbody" style="padding-bottom:6px"></div>${reviewHTML(st,true)}
       <div class="cardbody" style="border-top:1px solid var(--line)">${sendBlock}</div></div>
       <div class="nav"><button type="button" class="btn" id="back">Atrás</button></div>`;
+  } else if(sec.photos){
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(cur+1).padStart(2,"0")}</span><div><h2>Fotos de inicio</h2><p>${esc(sec.intro)}</p></div></div><div class="cardbody">${photosHTML()}<div class="err" id="photoerr" hidden></div></div></div>
+      <div class="nav"><button type="button" class="btn" id="back">Atrás</button><button type="submit" class="btn primary">Revisar respuestas</button></div>`;
   } else {
     html=`<div class="card"><div class="cardhead"><span class="num">${String(cur+1).padStart(2,"0")}</span><div><h2>${esc(sec.name)}</h2>${sec.intro?`<p>${esc(sec.intro)}</p>`:""}</div></div><div class="cardbody">`+
-      sec.fields.map(f=>f.grid?`<div class="grid2">${f.grid.map(fieldHTML).join("")}</div>`:fieldHTML(f)).join("")+`</div></div>
+      sec.fields.filter(vis).map(f=>f.grid?`<div class="grid2">${f.grid.filter(vis).map(fieldHTML).join("")}</div>`:fieldHTML(f)).join("")+`</div></div>
       <div class="nav">${cur>0?'<button type="button" class="btn" id="back">Atrás</button>':""}<button type="submit" class="btn primary">${cur===LAST-1?"Revisar respuestas":"Siguiente"}</button></div>`;
   }
   form.innerHTML=html;
@@ -346,6 +385,7 @@ function render(){
 }
 
 function validate(){
+  if(S[cur].photos&&Object.values(upl).includes("busy")){const e=$("photoerr");if(e){e.hidden=false;e.textContent="Espera a que terminen de subir tus fotos."}return false}
   let ok=true, first=null;
   flat(S[cur]).forEach(f=>{
     const el=form.querySelector(`[data-f="${f.id}"]`); if(!el) return;
@@ -364,7 +404,7 @@ function go(i){
 }
 
 /* ---------- Guardado en línea (Google Sheets vía Apps Script) ---------- */
-function payload(){return JSON.stringify({id:rid,answers:st,paso:Math.min(reached+1,S.length)+" de "+S.length,enviado:sent})}
+function payload(){const ans={};S.forEach(sec=>flat(sec).forEach(f=>{if(st[f.id]!=null)ans[f.id]=st[f.id]}));return JSON.stringify({id:rid,answers:ans,paso:Math.min(reached+1,S.length)+" de "+S.length,enviado:sent})}
 function queueCloud(){
   if(!cloud) return;
   setPill("busy","Guardando…");
@@ -384,15 +424,46 @@ async function pushCloud(){
   return false;
 }
 
+/* ---------- Fotos ---------- */
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const max=1600, k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement("canvas"); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg",0.85));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("formato"))};
+    img.src=url;
+  });
+}
+async function uploadPhoto(k,file){
+  upl[k]="busy"; render();
+  try{
+    const data=await shrink(file);
+    thumbs[k]=data; render();
+    let ok=false;
+    for(let i=0;i<2&&!ok;i++){
+      try{const r=await fetch(ENDPOINT,{method:"POST",body:JSON.stringify({accion:"foto",id:rid,nombre:String(st.nombre||"").trim(),tipo:k,data:data.split(",")[1]})});const j=await r.json();ok=!!(j&&j.ok)}catch(e){}
+      if(!ok) await new Promise(r=>setTimeout(r,1000));
+    }
+    if(!ok) throw new Error("red");
+    st.fotos=Object.assign({},st.fotos,{[k]:true}); upl[k]="ok"; saveLocal();
+  }catch(e){upl[k]="err"}
+  if(S[cur].photos&&view==="form") render();
+}
+
 /* ---------- Eventos ---------- */
 const form=$("form");
 form.addEventListener("input",e=>{
-  const t=e.target; if(!t.name||t.readOnly) return;
+  const t=e.target; if(!t.name||t.readOnly||t.type==="file") return;
   if(t.type==="checkbox") st[t.name]=[...form.querySelectorAll(`input[name="${t.name}"]:checked`)].map(x=>x.value);
   else st[t.name]=t.value;
   saveLocal();
   const fld=t.closest(".field"); if(fld&&fld.classList.contains("bad")){fld.classList.remove("bad");fld.querySelector(".err").hidden=true}
 });
+form.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.up&&t.files&&t.files[0]) uploadPhoto(t.dataset.up,t.files[0])});
 form.addEventListener("submit",e=>{e.preventDefault(); if(validate()) go(cur+1)});
 form.addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!t) return;
