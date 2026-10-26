@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Valoración inicial · Plan personalizado</title>
+<meta name="description" content="Formulario de inicio para tu plan personalizado de entrenamiento y nutrición.">
+<meta property="og:title" content="Valoración inicial · Plan personalizado">
+<meta property="og:description" content="Llena tu formulario de inicio. Toma unos 10 minutos.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F1420">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F1420'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='%237792FF' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: banda oscura de encabezado a todo lo ancho; debajo, una columna angosta tipo hoja de valoración, un paso a la vez */
+:root{
+  --bg:#F1F3F6; --surface:#FFFFFF; --ink:#121722; --muted:#596273; --line:#DADFE7;
+  --accent:#2350E6; --accent-ink:#FFFFFF; --accent-soft:#E8EEFD;
+  --band:#0F1420; --band-ink:#F2F4F8; --band-muted:#9AA4B6; --band-line:rgba(255,255,255,.05);
+  --ok:#1E8A55; --ok-soft:#E3F4EA; --warn:#9A6200; --warn-soft:#FBF1DC; --danger:#B8382A;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1016; --surface:#151922; --ink:#ECEFF4; --muted:#9AA3B2; --line:#283040;
+  --accent:#7792FF; --accent-ink:#0B0E14; --accent-soft:#1B2442;
+  --band:#070A10; --band-ink:#F2F4F8; --band-muted:#8C96A8; --band-line:rgba(255,255,255,.04);
+  --ok:#4CC98A; --ok-soft:#13291E; --warn:#E7B04B; --warn-soft:#2C2312; --danger:#FF8273; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1016; --surface:#151922; --ink:#ECEFF4; --muted:#9AA3B2; --line:#283040;
+  --accent:#7792FF; --accent-ink:#0B0E14; --accent-soft:#1B2442;
+  --band:#070A10; --band-ink:#F2F4F8; --band-muted:#8C96A8; --band-line:rgba(255,255,255,.04);
+  --ok:#4CC98A; --ok-soft:#13291E; --warn:#E7B04B; --warn-soft:#2C2312; --danger:#FF8273; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:660px;margin:0 auto}
+
+/* Banda */
+.band{background:var(--band);color:var(--band-ink);
+  background-image:repeating-linear-gradient(90deg,var(--band-line) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,var(--band-line) 0 1px,transparent 1px 48px)}
+.band .col{padding-block:30px 30px;display:flex;flex-direction:column;gap:14px}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.eyebrow{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.16em;font-size:13px;color:var(--band-muted)}
+.eyebrow b{color:var(--band-ink);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,10vw,64px);line-height:.92;margin:0;text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--band-muted);margin:0;max-width:56ch;font-size:16px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;color:var(--band-muted)}
+.meta span b{display:block;font-family:var(--display);font-size:22px;line-height:1;color:var(--band-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.savepill{font-size:13px;font-weight:600;border-radius:999px;padding:5px 11px;border:1px solid rgba(255,255,255,.18);color:var(--band-muted);display:inline-flex;align-items:center;gap:7px}
+.savepill i{width:7px;height:7px;border-radius:50%;background:var(--band-muted)}
+.savepill.ok i{background:#4CC98A}.savepill.busy i{background:#E7B04B}
+
+/* Progreso */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+.progress .col{padding-block:12px;display:flex;flex-direction:column;gap:8px}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.bars button{height:6px;border:0;border-radius:3px;background:var(--line);padding:0;cursor:pointer}
+.bars button.done{background:var(--accent);opacity:.4}
+.bars button.on{background:var(--accent);opacity:1}
+.bars button:disabled{cursor:default}
+.steplabel{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.steplabel b{font-family:var(--display);font-weight:600;font-size:19px;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
+
+main .col{padding-block:24px 72px;display:flex;flex-direction:column;gap:18px}
+
+/* Tarjeta de sección */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.cardhead{padding:20px 22px 0;display:flex;gap:14px;align-items:flex-start}
+.num{font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;flex:none;margin-top:3px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.05;margin:0;text-transform:uppercase;letter-spacing:.02em}
+.cardhead p{margin:4px 0 0;color:var(--muted);font-size:15px;max-width:52ch}
+.cardbody{padding:22px;display:flex;flex-direction:column;gap:24px}
+
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.field>.lab{font-weight:600;line-height:1.35}
+.req{color:var(--accent);margin-left:3px}
+.hint{font-size:14px;color:var(--muted);margin-top:-4px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px 16px}
+
+input[type=text],input[type=number],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;transition:border-color .15s}
+textarea{min-height:88px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.unit{position:relative}
+.unit input{padding-right:56px;font-variant-numeric:tabular-nums}
+.unit span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:inline-block;padding:9px 15px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:15px;cursor:pointer;user-select:none;transition:background .12s,border-color .12s}
+.opt:hover span{border-color:var(--accent)}
+.opt input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.days .opt span{min-width:54px;text-align:center}
+.scale .opts{flex-wrap:nowrap}
+.scale .opt{flex:1}
+.scale .opt span{display:block;text-align:center;border-radius:10px;font-variant-numeric:tabular-nums}
+.scale small{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:6px}
+
+.err{color:var(--danger);font-size:14px}
+.field.bad input,.field.bad textarea,.field.bad .opt span{border-color:var(--danger)}
+
+.nav{display:flex;justify-content:space-between;gap:12px}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 22px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.big{padding:15px 24px;font-size:17px}
+.btn.small{padding:6px 12px;font-size:14px;border-radius:8px}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.6;cursor:progress}
+.nav .btn.primary{margin-left:auto}
+
+/* Revisión */
+.rev{display:flex;flex-direction:column}
+.revsec{padding:16px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.revsec:first-child{border-top:0}
+.revhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.revhead h3{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:17px;margin:0}
+dl{margin:0;display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:6px 16px;font-size:15px}
+dt{color:var(--muted)}
+dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+@media (max-width:460px){dl{grid-template-columns:1fr;gap:0}dd{margin-bottom:8px}}
+.empty{color:var(--muted);font-size:14px;font-style:italic}
+
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.photos div{border:1px dashed var(--line);border-radius:12px;padding:14px 8px;text-align:center;font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:16px}
+.photos svg{display:block;margin:0 auto 6px;width:34px;height:52px}
+.photos small{display:block;font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:13px}
+.note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:15px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.callout{background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:14px 16px;font-size:15px}
+.done{text-align:center;padding:34px 22px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.check{width:64px;height:64px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center}
+.done h2{font-size:34px}
+.done p{margin:0;color:var(--muted);max-width:44ch}
+#summary{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;min-height:200px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.actions .btn{flex:1 1 200px}
+.toast{font-size:14px;color:var(--muted);min-height:20px}
+
+/* Panel del coach */
+.coach .cardbody{gap:12px}
+.resp{display:flex;align-items:center;gap:12px;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;flex-wrap:wrap}
+.resp b{font-size:16px}
+.resp small{color:var(--muted);display:block;font-variant-numeric:tabular-nums}
+.pill{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:3px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.wip{background:var(--warn-soft);color:var(--warn)}
+.resp .r{display:flex;gap:8px;align-items:center}
+footer{color:var(--muted);font-size:13px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .28s ease-out}@keyframes in{from{transform:translateY(8px)}to{transform:none}}}
+</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="band gut">
+  <div class="col">
+    <div class="toprow">
+      <div class="eyebrow"><b>Valoración inicial</b> · Entrenamiento y nutrición</div>
+      <span class="savepill" id="savepill"><i></i><span id="savetext">Guardado en este dispositivo</span></span>
+    </div>
+    <h1>Tu plan empieza <em>aquí</em></h1>
+    <p class="lede">Con tus respuestas diseñamos tu entrenamiento y tu alimentación desde cero. Si no sabes algún dato, déjalo en blanco; solo lo marcado con <span style="color:var(--accent)">*</span> es obligatorio.</p>
+    <div class="meta"><span><b>10 min</b>aproximado</span><span><b>6</b>secciones</span><span><b>100%</b>confidencial</span></div>
+  </div>
+</div>
+
+<div class="progress gut" aria-label="Progreso">
+  <div class="col">
+    <div class="bars" id="bars"></div>
+    <div class="steplabel"><b id="stepname">Datos</b><span id="stepcount">Paso 1 de 7</span></div>
+  </div>
+</div>
+
+<main class="gut">
+  <div class="col">
+    <form id="form" novalidate></form>
+    <footer>Tus respuestas solo las ve tu coach.</footer>
+  </div>
+</main>
+
+<script>
+const DAYS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const S=[
+ {name:"Datos",intro:"Mídete por la mañana, en ayunas y después de ir al baño. La cinta va pegada a la piel, sin apretar.",fields:[
+  {id:"nombre",t:"text",l:"Nombre completo",req:1,s:"Nombre"},
+  {grid:[
+   {id:"edad",t:"num",l:"Edad",u:"años",req:1,s:"Edad"},
+   {id:"estatura",t:"num",l:"Estatura",u:"cm",req:1,s:"Estatura"},
+   {id:"peso",t:"num",l:"Peso actual",u:"kg",req:1,s:"Peso",step:"0.1"},
+   {id:"cintura",t:"num",l:"Cintura",u:"cm",h:"A la altura del ombligo, sin meter el abdomen",s:"Cintura (ombligo)",step:"0.5"},
+   {id:"cadera",t:"num",l:"Cadera",u:"cm",h:"En la parte más ancha de los glúteos",s:"Cadera",step:"0.5"},
+   {id:"grasa",t:"num",l:"Grasa corporal",u:"%",h:"Solo si te la han medido",s:"% grasa",step:"0.1"}
+  ]},
+  {id:"ocupacion",t:"text",l:"¿A qué te dedicas?",s:"Ocupación"}
+ ]},
+ {name:"Objetivo",intro:"Lo que quieres lograr define cómo repartimos calorías, volumen y prioridades.",fields:[
+  {id:"objetivo",t:"radio",l:"¿Cuál es tu objetivo principal?",req:1,s:"Objetivo",o:["Bajar grasa","Recomposición (bajar grasa y marcar)","Ganar músculo","Mejorar rendimiento o salud"]},
+  {id:"zonas",t:"check",l:"¿Qué zonas quieres priorizar?",h:"Puedes elegir varias",s:"Zonas prioritarias",o:["Glúteo","Pierna","Abdomen / cintura","Espalda","Hombros","Brazos"]},
+  {id:"plan",t:"check",l:"¿Qué te gustaría incluir en tu plan?",s:"Quiere plan de",o:["Entrenamiento","Alimentación","Movilidad","Suplementación"]},
+  {id:"pesometa",t:"num",l:"Peso que te gustaría alcanzar",u:"kg",h:"Opcional",s:"Peso meta",step:"0.1"},
+  {id:"evento",t:"text",l:"¿Tienes una fecha o evento en mente?",h:"Por ejemplo: un viaje, una boda, una sesión de fotos",s:"Fecha / evento"},
+  {id:"porque",t:"area",l:"¿Qué te gustaría ver diferente en tu cuerpo o en cómo te sientes?",s:"Qué quiere cambiar"}
+ ]},
+ {name:"Entrenamiento",intro:"Para armar una rutina que de verdad quepa en tu semana.",fields:[
+  {id:"experiencia",t:"radio",l:"¿Cuánto tiempo llevas entrenando con pesas?",req:1,s:"Experiencia",o:["Nunca","Menos de 6 meses","6 meses a 2 años","Más de 2 años"]},
+  {id:"dias",t:"check",l:"¿Qué días puedes entrenar?",req:1,cls:"days",s:"Días disponibles",o:DAYS},
+  {id:"duracion",t:"radio",l:"¿Cuánto tiempo tienes por sesión?",s:"Duración por sesión",o:["45 min","60 min","75 min","90 min"]},
+  {id:"horario",t:"radio",l:"¿A qué hora sueles entrenar?",s:"Horario",o:["Mañana","Mediodía","Tarde","Noche","Varía"]},
+  {id:"lugar",t:"radio",l:"¿Dónde entrenas?",req:1,s:"Lugar",o:["Gimnasio completo","En casa","Ambos"]},
+  {id:"equipo",t:"area",l:"Si entrenas en casa, ¿qué equipo tienes?",h:"Mancuernas (qué pesos), ligas, banco, barra…",s:"Equipo en casa"},
+  {id:"rutina",t:"area",l:"¿Cómo es tu rutina actual?",h:"Qué días entrenas qué, aunque sea a grandes rasgos",s:"Rutina actual"},
+  {id:"cardio",t:"text",l:"¿Haces cardio o algún deporte? ¿Cuánto?",s:"Cardio / deporte"},
+  {id:"nogusta",t:"area",l:"Ejercicios que no te gustan o que te molestan",s:"No le gustan / le molestan"}
+ ]},
+ {name:"Salud",intro:"Esto nos ayuda a cuidar que el plan sea seguro para ti. Todo es confidencial.",fields:[
+  {id:"lesiones",t:"area",l:"Lesiones, dolores o cirugías",h:"Rodilla, espalda baja, hombro… aunque sean antiguas",s:"Lesiones / dolores"},
+  {id:"condiciones",t:"area",l:"Condiciones médicas",h:"Tiroides, SOP, presión, resistencia a la insulina, anemia, etc.",s:"Condiciones médicas"},
+  {id:"medicamentos",t:"area",l:"Medicamentos o anticonceptivos que tomas",s:"Medicamentos / anticonceptivos"},
+  {id:"suplementos",t:"area",l:"Suplementos que tomas hoy",h:"Proteína, creatina, vitaminas, quemadores…",s:"Suplementos actuales"},
+  {id:"ciclo",t:"radio",l:"¿Tu ciclo menstrual es regular?",s:"Ciclo menstrual",o:["Sí, regular","Irregular","No menstrúo por anticonceptivo","Prefiero no decir"]},
+  {id:"embarazo",t:"radio",l:"¿Estás embarazada, lactando o buscando embarazo?",s:"Embarazo / lactancia",o:["No","Sí"]},
+  {id:"tca",t:"radio",l:"¿Has tenido algún trastorno de la conducta alimentaria?",s:"Antecedente TCA",o:["No","Sí","Prefiero platicarlo en persona"]}
+ ]},
+ {name:"Alimentación",intro:"Tu plan se arma con comida que te guste y que puedas conseguir fácil.",fields:[
+  {id:"comidas",t:"radio",l:"¿Cuántas comidas haces al día hoy?",s:"Comidas al día",o:["2","3","4","5","6 o más"]},
+  {id:"horarios",t:"text",l:"¿A qué horas comes normalmente?",h:"Por ejemplo: 8:00, 14:00, 20:00",s:"Horarios"},
+  {id:"diaejemplo",t:"area",l:"¿Qué comiste ayer, más o menos?",h:"Nos da una idea de tus porciones y costumbres",s:"Día ejemplo"},
+  {id:"gustan",t:"area",l:"Alimentos que te gustan y comerías seguido",h:"Proteínas, carbohidratos, frutas, snacks",s:"Le gustan"},
+  {id:"nocome",t:"area",l:"Alimentos que no comes o no te gustan",s:"No come"},
+  {id:"alergias",t:"text",l:"Alergias o intolerancias",s:"Alergias / intolerancias"},
+  {id:"dieta",t:"radio",l:"Tipo de alimentación",s:"Tipo de alimentación",o:["Como de todo","Vegetariana","Vegana","Otra"]},
+  {id:"cocina",t:"radio",l:"¿Quién prepara tu comida?",s:"Quién cocina",o:["Yo","Alguien más","Compro o como fuera","Mixto"]},
+  {id:"agua",t:"radio",l:"¿Cuánta agua tomas al día?",s:"Agua",o:["Menos de 1 L","1 a 2 L","2 a 3 L","Más de 3 L"]},
+  {id:"alcohol",t:"radio",l:"¿Con qué frecuencia tomas alcohol?",s:"Alcohol",o:["No tomo","1 o 2 veces al mes","Cada fin de semana","Varias veces por semana"]},
+  {id:"antojos",t:"area",l:"¿Cuándo te dan más antojos y de qué?",s:"Antojos"},
+  {id:"bascula",t:"radio",l:"¿Tienes báscula de cocina?",s:"Báscula",o:["Sí","No, pero puedo conseguir una","Prefiero no pesar comida"]}
+ ]},
+ {name:"Hábitos",intro:"El descanso y el estrés pesan tanto como la rutina.",fields:[
+  {id:"sueno",t:"radio",l:"¿Cuántas horas duermes?",s:"Sueño",o:["Menos de 6 h","6 a 7 h","7 a 8 h","Más de 8 h"]},
+  {id:"actividad",t:"radio",l:"Fuera del gym, tu día es…",s:"Actividad diaria",o:["Sentada casi todo el día","Mixto","De pie o en movimiento"]},
+  {id:"pasos",t:"radio",l:"Pasos al día",s:"Pasos",o:["Menos de 5,000","5,000 a 8,000","8,000 a 12,000","Más de 12,000","No sé"]},
+  {id:"estres",t:"scale",l:"Nivel de estrés",s:"Estrés (1–5)",lo:"Tranquila",hi:"Muy alto"},
+  {id:"adherencia",t:"scale",l:"¿Qué tan fácil se te hace seguir un plan?",s:"Facilidad para seguir plan (1–5)",lo:"Me cuesta",hi:"Muy fácil"},
+  {id:"comentarios",t:"area",l:"¿Algo más que debamos saber?",s:"Comentarios"}
+ ]},
+ {name:"Revisar",final:1}
+];
+const LAST=S.length-1;
+
+/* ---------- Estado ---------- */
+/* URL de la aplicación web de Apps Script (Implementar > Aplicación web). Vacío = modo WhatsApp. */
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxXD8LDI6Mtp5kSssngt1pEyjCJzKiEFLKu_Ug3NAYxOA-8oQqh-jGx-B4bt0HbICmn/exec";
+
+const KEY="formulario-inicio-v2";
+const newId=()=>{try{return crypto.randomUUID()}catch(e){return "id-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,12)}};
+let st={}, cur=0, reached=0, sent=false, sentAt=null, view="form", rid=newId();
+try{const d=JSON.parse(localStorage.getItem(KEY)||"{}"); st=d.a||{}; reached=+(d.r||0); sent=!!d.s; sentAt=d.t||null; if(d.id) rid=d.id}catch(e){}
+const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify({a:st,r:reached,s:sent,t:sentAt,id:rid}))}catch(e){}};
+let cloud=/^https:\/\/script\.google\.com\//.test(ENDPOINT), timer=null;
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const flat=sec=>sec.fields?sec.fields.flatMap(f=>f.grid?f.grid:[f]):[];
+const $=id=>document.getElementById(id);
+const fmtVal=(f,v)=>{if(Array.isArray(v))v=v.join(", ");v=(v??"").toString().trim();if(!v)return"";return f.u==="%"?v+"%":f.u?v+" "+f.u:v};
+
+function setPill(kind,text){const p=$("savepill");p.className="savepill "+(kind||"");$("savetext").textContent=text}
+
+/* ---------- Campos ---------- */
+function fieldHTML(f){
+  const req=f.req?'<span class="req">*</span>':"";
+  const hint=f.h?`<div class="hint">${esc(f.h)}</div>`:"";
+  const v=st[f.id]; let inner="";
+  if(f.t==="text") inner=`<input type="text" id="${f.id}" name="${f.id}" value="${esc(v||"")}" autocomplete="off">`;
+  if(f.t==="num") inner=`<div class="unit"><input type="number" inputmode="decimal" step="${f.step||1}" min="0" id="${f.id}" name="${f.id}" value="${esc(v||"")}"><span>${f.u}</span></div>`;
+  if(f.t==="area") inner=`<textarea id="${f.id}" name="${f.id}">${esc(v||"")}</textarea>`;
+  if(f.t==="radio"||f.t==="check"){
+    const type=f.t==="radio"?"radio":"checkbox";
+    inner=`<div class="opts ${f.cls||""}" role="${type==="radio"?"radiogroup":"group"}" aria-labelledby="${f.id}-l">`+f.o.map((o,i)=>{
+      const on=type==="radio"?v===o:(Array.isArray(v)&&v.includes(o));
+      return `<label class="opt"><input type="${type}" id="${f.id}-${i}" name="${f.id}" value="${esc(o)}"${on?" checked":""}><span>${esc(o)}</span></label>`}).join("")+`</div>`;
+  }
+  if(f.t==="scale") inner=`<div class="scale"><div class="opts" role="radiogroup" aria-labelledby="${f.id}-l">`+[1,2,3,4,5].map(n=>`<label class="opt"><input type="radio" id="${f.id}-${n}" name="${f.id}" value="${n}"${v==String(n)?" checked":""}><span>${n}</span></label>`).join("")+`</div><small><span>${esc(f.lo)}</span><span>${esc(f.hi)}</span></small></div>`;
+  const lab=(f.t==="text"||f.t==="num"||f.t==="area")?`<label class="lab" for="${f.id}">${esc(f.l)}${req}</label>`:`<div class="lab" id="${f.id}-l">${esc(f.l)}${req}</div>`;
+  return `<div class="field" data-f="${f.id}">${lab}${hint}${inner}<div class="err" hidden></div></div>`;
+}
+
+/* ---------- Revisión / resumen ---------- */
+function reviewHTML(a,editable){
+  return `<div class="rev">`+S.slice(0,LAST).map((sec,i)=>{
+    const rows=flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`<dt>${esc(f.s)}</dt><dd>${esc(v)}</dd>`:""}).join("");
+    return `<div class="revsec"><div class="revhead"><h3>${esc(sec.name)}</h3>${editable?`<button type="button" class="btn small" data-edit="${i}">Editar</button>`:""}</div>${rows?`<dl>${rows}</dl>`:`<div class="empty">Sin respuestas</div>`}</div>`;
+  }).join("")+`</div>`;
+}
+function summary(a){
+  const L=[`*FORMULARIO DE INICIO*${a.nombre?" · "+String(a.nombre).trim():""}`];
+  S.slice(0,LAST).forEach(sec=>{
+    const rows=flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`${f.s}: ${v}`:null}).filter(Boolean);
+    if(rows.length){L.push("",`*${sec.name.toUpperCase()}*`,...rows)}
+  });
+  return L.join("\n");
+}
+const PHOTOS=`<div class="photos">
+  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>Frente<small>brazos a los lados</small></div>
+  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="12" y="12" width="10" height="20" rx="5"/><rect x="15" y="13" width="4" height="17" rx="2"/><rect x="13" y="30" width="7" height="21" rx="3"/></svg>Perfil<small>lado derecho</small></div>
+  <div><svg viewBox="0 0 34 52" fill="currentColor" opacity=".35"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>Espalda<small>talones juntos</small></div>
+</div>`;
+const PHOTONOTE=`<div class="note"><b>Fotos de inicio.</b> Mándalas a tu coach por WhatsApp; no se suben aquí.<ul><li>En ayunas, con buena luz y fondo liso</li><li>Ropa deportiva ajustada o traje de baño</li><li>Relajada, sin posar; celular a la altura del pecho</li></ul></div>`;
+
+/* ---------- Render ---------- */
+function render(){
+  const sec=S[cur]; let html="";
+  if(view==="done"){
+    html=`<div class="card"><div class="done">
+      <div class="check"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h2>¡Listo${st.nombre?", "+esc(String(st.nombre).trim().split(/\s+/)[0]):""}!</h2>
+      <p>Tu coach ya recibió tus respuestas. Con esto empieza a armar tu plan.</p></div>
+      <div class="cardbody" style="padding-top:0">${PHOTONOTE}${PHOTOS}
+      <button type="button" class="btn" id="reedit">Revisar o corregir mis respuestas</button></div></div>`;
+  } else if(sec.final){
+    const sendBlock=cloud
+      ?`<button type="button" class="btn primary big" id="send">${sent?"Actualizar respuestas enviadas":"Enviar a mi coach"}</button><div class="toast" id="toast" aria-live="polite"></div>`
+      :`<div class="callout">Envía tus respuestas a tu coach por WhatsApp. Si el botón no abre WhatsApp, cópialas y pégalas en el chat.</div>
+        <textarea id="summary" readonly aria-label="Resumen">${esc(summary(st))}</textarea>
+        <div class="actions"><a class="btn primary" href="https://wa.me/?text=${encodeURIComponent(summary(st))}" target="_blank" rel="noopener">Enviar por WhatsApp</a><button type="button" class="btn" id="copy">Copiar respuestas</button></div>
+        <div class="toast" id="toast" aria-live="polite"></div>`;
+    html=`<div class="card"><div class="cardhead"><span class="num">07</span><div><h2>Revisa y envía</h2><p>Confirma que todo esté bien. Puedes editar cualquier sección.</p></div></div>
+      <div class="cardbody" style="padding-bottom:6px"></div>${reviewHTML(st,true)}
+      <div class="cardbody" style="border-top:1px solid var(--line)">${sendBlock}</div></div>
+      <div class="nav"><button type="button" class="btn" id="back">Atrás</button></div>`;
+  } else {
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(cur+1).padStart(2,"0")}</span><div><h2>${esc(sec.name)}</h2>${sec.intro?`<p>${esc(sec.intro)}</p>`:""}</div></div><div class="cardbody">`+
+      sec.fields.map(f=>f.grid?`<div class="grid2">${f.grid.map(fieldHTML).join("")}</div>`:fieldHTML(f)).join("")+`</div></div>
+      <div class="nav">${cur>0?'<button type="button" class="btn" id="back">Atrás</button>':""}<button type="submit" class="btn primary">${cur===LAST-1?"Revisar respuestas":"Siguiente"}</button></div>`;
+  }
+  form.innerHTML=html;
+  $("stepname").textContent=view==="done"?"Enviado":sec.name;
+  $("stepcount").textContent=view==="done"?"Completo":`Paso ${cur+1} de ${S.length}`;
+  $("bars").innerHTML=S.map((s,i)=>`<button type="button" aria-label="${s.name}" class="${view==="done"?"done":i===cur?"on":i<=reached?"done":""}"${i>reached||view==="done"?" disabled":""} data-go="${i}"></button>`).join("");
+}
+
+function validate(){
+  let ok=true, first=null;
+  flat(S[cur]).forEach(f=>{
+    const el=form.querySelector(`[data-f="${f.id}"]`); if(!el) return;
+    const v=st[f.id]; const empty=!v||(Array.isArray(v)&&!v.length)||!String(v).trim();
+    const err=el.querySelector(".err");
+    if(f.req&&empty){ok=false;el.classList.add("bad");err.hidden=false;err.textContent=f.t==="check"?"Elige al menos una opción.":f.t==="radio"?"Elige una opción.":"Necesitamos este dato para calcular tu plan.";first=first||el}
+    else{el.classList.remove("bad");err.hidden=true}
+  });
+  if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
+  return ok;
+}
+function go(i){
+  view="form"; cur=Math.max(0,Math.min(LAST,i));
+  if(cur>reached) reached=cur;
+  saveLocal(); queueCloud(); render(); window.scrollTo({top:0});
+}
+
+/* ---------- Guardado en línea (Google Sheets vía Apps Script) ---------- */
+function payload(){return JSON.stringify({id:rid,answers:st,paso:Math.min(reached+1,S.length)+" de "+S.length,enviado:sent})}
+function queueCloud(){
+  if(!cloud) return;
+  setPill("busy","Guardando…");
+  clearTimeout(timer); timer=setTimeout(pushCloud,600);
+}
+async function pushCloud(){
+  if(!cloud) return false;
+  for(let i=0;i<2;i++){
+    try{
+      const r=await fetch(ENDPOINT,{method:"POST",body:payload()});
+      const j=await r.json();
+      if(j&&j.ok){setPill("ok","Guardado");return true}
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,900+Math.random()*700));
+  }
+  setPill("","Guardado en este dispositivo");
+  return false;
+}
+
+/* ---------- Eventos ---------- */
+const form=$("form");
+form.addEventListener("input",e=>{
+  const t=e.target; if(!t.name||t.readOnly) return;
+  if(t.type==="checkbox") st[t.name]=[...form.querySelectorAll(`input[name="${t.name}"]:checked`)].map(x=>x.value);
+  else st[t.name]=t.value;
+  saveLocal();
+  const fld=t.closest(".field"); if(fld&&fld.classList.contains("bad")){fld.classList.remove("bad");fld.querySelector(".err").hidden=true}
+});
+form.addEventListener("submit",e=>{e.preventDefault(); if(validate()) go(cur+1)});
+form.addEventListener("click",async e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.id==="back") go(cur-1);
+  if(t.dataset.edit!==undefined) go(+t.dataset.edit);
+  if(t.id==="reedit"){view="form";cur=LAST;render();window.scrollTo({top:0})}
+  if(t.id==="copy"){
+    const ta=$("summary"), msg=$("toast");
+    const fb=()=>{ta.focus();ta.select();msg.textContent="Texto seleccionado. Cópialo con el menú de tu teléfono o Ctrl+C."};
+    try{navigator.clipboard.writeText(ta.value).then(()=>msg.textContent="Copiado. Pégalo en el chat con tu coach.",fb)}catch(_){fb()}
+  }
+  if(t.id==="send"){
+    const missing=S.slice(0,LAST).findIndex(sec=>flat(sec).some(f=>f.req&&(!st[f.id]||(Array.isArray(st[f.id])&&!st[f.id].length)||!String(st[f.id]).trim())));
+    if(missing>=0){go(missing);setTimeout(validate,50);return}
+    t.disabled=true; t.textContent="Enviando…";
+    const prev=[sent,sentAt]; sent=true; sentAt=sentAt||Date.now();
+    clearTimeout(timer);
+    if(await pushCloud()){saveLocal();view="done";render();window.scrollTo({top:0})}
+    else{[sent,sentAt]=prev; cloud=false; render(); const m=$("toast"); if(m) m.textContent="No hubo conexión con el servidor. Envía tus respuestas por WhatsApp con el botón de arriba."}
+  }
+});
+$("bars").addEventListener("click",e=>{const b=e.target.closest("[data-go]"); if(b&&!b.disabled) go(+b.dataset.go)});
+
+/* ---------- Arranque ---------- */
+if(sent) view="done";
+render();
+if(cloud) setPill("ok", reached>0?"Guardado":"Se guarda automáticamente");
+</script>
+
+</body>
+</html>
