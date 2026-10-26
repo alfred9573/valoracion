@@ -429,10 +429,10 @@ function shrink(file){
   return new Promise((res,rej)=>{
     const url=URL.createObjectURL(file), img=new Image();
     img.onload=()=>{
-      const max=1600, k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const max=2560, k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
       const c=document.createElement("canvas"); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
       c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
-      res(c.toDataURL("image/jpeg",0.85));
+      res(c.toDataURL("image/jpeg",0.92));
     };
     img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("formato"))};
     img.src=url;
