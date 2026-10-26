@@ -293,7 +293,7 @@ const SIL={
  frente:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>',
  perfil:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="12" y="12" width="10" height="20" rx="5"/><rect x="15" y="13" width="4" height="17" rx="2"/><rect x="13" y="30" width="7" height="21" rx="3"/></svg>',
  espalda:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>'};
-const thumbs={}, upl={};
+const thumbs={}, upl={}, pending={};
 const fotosOk=()=>SHOTS.filter(x=>st.fotos&&st.fotos[x.k]).length;
 const $=id=>document.getElementById(id);
 const fmtVal=(f,v)=>{if(Array.isArray(v))v=v.join(", ");v=(v??"").toString().trim();if(!v)return"";return f.u==="%"?v+"%":f.u?v+" "+f.u:v};
@@ -343,8 +343,8 @@ function photosHTML(){
   if(!cloud) return head+`<div class="callout">Mándale estas tres fotos a tu coach por WhatsApp.</div>`;
   return head+`<div class="shots">`+SHOTS.map(x=>{
     const done=st.fotos&&st.fotos[x.k], u=upl[x.k];
-    const cls=u==="err"?"err":done?"ok":"";
-    const stat=u==="busy"?'<span class="ststat busy">Subiendo…</span>':u==="err"?'<span class="ststat err">No se subió. Intenta de nuevo.</span>':done?'<span class="ststat ok">Subida ✓</span>':'<span class="ststat"></span>';
+    const cls=u==="err"||u==="fmt"?"err":done?"ok":"";
+    const stat=u==="busy"?'<span class="ststat busy">Subiendo…</span>':u==="err"?`<button type="button" class="btn small" data-retry="${x.k}">Reintentar</button><span class="ststat err">No se subió</span>`:u==="fmt"?'<span class="ststat err">Formato no compatible. Toma la foto con la cámara.</span>':done?'<span class="ststat ok">Subida ✓</span>':'<span class="ststat"></span>';
     return `<div class="shot ${cls}"><div class="frame">${thumbs[x.k]?`<img src="${thumbs[x.k]}" alt="Foto de ${x.n.toLowerCase()}">`:SIL[x.k]}</div><b>${x.n}</b><small>${x.d}</small>
       <span class="btn small upl">${done?"Cambiar":"Subir foto"}<input type="file" accept="image/*" data-up="${x.k}" aria-label="Subir foto de ${x.n.toLowerCase()}"${u==="busy"?" disabled":""}></span>${stat}</div>`}).join("")+`</div><div class="hint" style="margin-top:0">Si prefieres, puedes mandarlas después por WhatsApp.</div>`;
 }
@@ -440,17 +440,24 @@ function shrink(file){
 }
 async function uploadPhoto(k,file){
   upl[k]="busy"; render();
-  try{
-    const data=await shrink(file);
-    thumbs[k]=data; render();
-    let ok=false;
-    for(let i=0;i<2&&!ok;i++){
-      try{const r=await fetch(ENDPOINT,{method:"POST",body:JSON.stringify({accion:"foto",id:rid,nombre:String(st.nombre||"").trim(),tipo:k,data:data.split(",")[1]})});const j=await r.json();ok=!!(j&&j.ok)}catch(e){}
-      if(!ok) await new Promise(r=>setTimeout(r,1000));
-    }
-    if(!ok) throw new Error("red");
-    st.fotos=Object.assign({},st.fotos,{[k]:true}); upl[k]="ok"; saveLocal();
-  }catch(e){upl[k]="err"}
+  let data;
+  try{data=await shrink(file)}catch(e){upl[k]="fmt"; render(); return}
+  thumbs[k]=data; pending[k]=data;
+  await sendPhoto(k);
+}
+async function sendPhoto(k){
+  const data=pending[k]; if(!data) return;
+  upl[k]="busy"; render();
+  let ok=false;
+  for(let i=0;i<4&&!ok;i++){
+    if(i) await new Promise(r=>setTimeout(r,1500*i));
+    try{
+      const r=await fetch(ENDPOINT,{method:"POST",body:JSON.stringify({accion:"foto",id:rid,nombre:String(st.nombre||"").trim(),tipo:k,data:data.split(",")[1]})});
+      const j=await r.json(); ok=!!(j&&j.ok);
+    }catch(e){}
+  }
+  if(ok){st.fotos=Object.assign({},st.fotos,{[k]:true}); upl[k]="ok"; delete pending[k]; saveLocal()}
+  else upl[k]="err";
   if(S[cur].photos&&view==="form") render();
 }
 
@@ -463,10 +470,11 @@ form.addEventListener("input",e=>{
   saveLocal();
   const fld=t.closest(".field"); if(fld&&fld.classList.contains("bad")){fld.classList.remove("bad");fld.querySelector(".err").hidden=true}
 });
-form.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.up&&t.files&&t.files[0]) uploadPhoto(t.dataset.up,t.files[0])});
+form.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.up&&t.files&&t.files[0]){const f=t.files[0];t.value="";uploadPhoto(t.dataset.up,f)}});
 form.addEventListener("submit",e=>{e.preventDefault(); if(validate()) go(cur+1)});
 form.addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.retry){sendPhoto(t.dataset.retry);return}
   if(t.id==="back") go(cur-1);
   if(t.dataset.edit!==undefined) go(+t.dataset.edit);
   if(t.id==="reedit"){view="form";cur=LAST;render();window.scrollTo({top:0})}
