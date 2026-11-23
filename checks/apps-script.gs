@@ -127,10 +127,12 @@ function json(obj) {
 function hoja() {
   const libro = SpreadsheetApp.openById(ID_HOJA);
   let h = libro.getSheetByName(NOMBRE_PESTANA);
-  if (!h) {
-    h = libro.insertSheet(NOMBRE_PESTANA);
-    h.appendRow(ENCABEZADOS);
-    h.getRange(1, 1, 1, ENCABEZADOS.length).setFontWeight("bold");
+  if (!h) h = libro.insertSheet(NOMBRE_PESTANA);
+  /* Pone los encabezados si la fila 1 no los tiene, aunque la pestaña ya
+     existiera (por ejemplo, si se renombró la "Hoja 1" a mano). */
+  if (h.getLastRow() === 0 || h.getRange(1, 1).getValue() !== ENCABEZADOS[0]) {
+    if (h.getLastRow() > 0) h.insertRowBefore(1);
+    h.getRange(1, 1, 1, ENCABEZADOS.length).setValues([ENCABEZADOS]).setFontWeight("bold");
     h.setFrozenRows(1);
   }
   return h;
