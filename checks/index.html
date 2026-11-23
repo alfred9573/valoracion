@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Check de seguimiento · Tu plan</title>
+<meta name="description" content="Reporte de seguimiento para tu plan de entrenamiento y nutrición.">
+<meta property="og:title" content="Check de seguimiento · Tu plan">
+<meta property="og:description" content="Manda tu check de seguimiento. Toma unos 5 minutos.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0F1420">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230F1420'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' fill='none' stroke='%237792FF' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: banda oscura de encabezado a todo lo ancho; debajo, una columna angosta tipo hoja de valoración, un paso a la vez */
+:root{
+  --bg:#F1F3F6; --surface:#FFFFFF; --ink:#121722; --muted:#596273; --line:#DADFE7;
+  --accent:#2350E6; --accent-ink:#FFFFFF; --accent-soft:#E8EEFD;
+  --band:#0F1420; --band-ink:#F2F4F8; --band-muted:#9AA4B6; --band-line:rgba(255,255,255,.05);
+  --ok:#1E8A55; --ok-soft:#E3F4EA; --warn:#9A6200; --warn-soft:#FBF1DC; --danger:#B8382A;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1016; --surface:#151922; --ink:#ECEFF4; --muted:#9AA3B2; --line:#283040;
+  --accent:#7792FF; --accent-ink:#0B0E14; --accent-soft:#1B2442;
+  --band:#070A10; --band-ink:#F2F4F8; --band-muted:#8C96A8; --band-line:rgba(255,255,255,.04);
+  --ok:#4CC98A; --ok-soft:#13291E; --warn:#E7B04B; --warn-soft:#2C2312; --danger:#FF8273; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1016; --surface:#151922; --ink:#ECEFF4; --muted:#9AA3B2; --line:#283040;
+  --accent:#7792FF; --accent-ink:#0B0E14; --accent-soft:#1B2442;
+  --band:#070A10; --band-ink:#F2F4F8; --band-muted:#8C96A8; --band-line:rgba(255,255,255,.04);
+  --ok:#4CC98A; --ok-soft:#13291E; --warn:#E7B04B; --warn-soft:#2C2312; --danger:#FF8273; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:660px;margin:0 auto}
+
+/* Banda */
+.band{background:var(--band);color:var(--band-ink);
+  background-image:repeating-linear-gradient(90deg,var(--band-line) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,var(--band-line) 0 1px,transparent 1px 48px)}
+.band .col{padding-block:30px 30px;display:flex;flex-direction:column;gap:14px}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.eyebrow{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.16em;font-size:13px;color:var(--band-muted)}
+.eyebrow b{color:var(--band-ink);font-weight:600}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,10vw,64px);line-height:.92;margin:0;text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{color:var(--band-muted);margin:0;max-width:56ch;font-size:16px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px;color:var(--band-muted)}
+.meta span b{display:block;font-family:var(--display);font-size:22px;line-height:1;color:var(--band-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.savepill{font-size:13px;font-weight:600;border-radius:999px;padding:5px 11px;border:1px solid rgba(255,255,255,.18);color:var(--band-muted);display:inline-flex;align-items:center;gap:7px}
+.savepill i{width:7px;height:7px;border-radius:50%;background:var(--band-muted)}
+.savepill.ok i{background:#4CC98A}.savepill.busy i{background:#E7B04B}
+
+/* Progreso */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;border-bottom:1px solid var(--line)}
+.progress .col{padding-block:12px;display:flex;flex-direction:column;gap:8px}
+.bars{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.bars button{height:6px;border:0;border-radius:3px;background:var(--line);padding:0;cursor:pointer}
+.bars button.done{background:var(--accent);opacity:.4}
+.bars button.on{background:var(--accent);opacity:1}
+.bars button:disabled{cursor:default}
+.steplabel{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.steplabel b{font-family:var(--display);font-weight:600;font-size:19px;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
+
+main .col{padding-block:24px 72px;display:flex;flex-direction:column;gap:18px}
+
+/* Tarjeta de sección */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.cardhead{padding:20px 22px 0;display:flex;gap:14px;align-items:flex-start}
+.num{font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums;flex:none;margin-top:3px}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.05;margin:0;text-transform:uppercase;letter-spacing:.02em}
+.cardhead p{margin:4px 0 0;color:var(--muted);font-size:15px;max-width:52ch}
+.cardbody{padding:22px;display:flex;flex-direction:column;gap:24px}
+
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.field>.lab{font-weight:600;line-height:1.35}
+.req{color:var(--accent);margin-left:3px}
+.hint{font-size:14px;color:var(--muted);margin-top:-4px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:20px 16px}
+
+input[type=text],input[type=number],textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;transition:border-color .15s}
+textarea{min-height:88px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.unit{position:relative}
+.unit input{padding-right:56px;font-variant-numeric:tabular-nums}
+.unit span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.opt span{display:inline-block;padding:9px 15px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:15px;cursor:pointer;user-select:none;transition:background .12s,border-color .12s}
+.opt:hover span{border-color:var(--accent)}
+.opt input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.days .opt span{min-width:54px;text-align:center}
+.scale .opts{flex-wrap:nowrap}
+.scale .opt{flex:1}
+.scale .opt span{display:block;text-align:center;border-radius:10px;font-variant-numeric:tabular-nums}
+.scale small{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:6px}
+
+.err{color:var(--danger);font-size:14px}
+.field.bad input,.field.bad textarea,.field.bad .opt span{border-color:var(--danger)}
+
+.nav{display:flex;justify-content:space-between;gap:12px}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 22px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.big{padding:15px 24px;font-size:17px}
+.btn.small{padding:6px 12px;font-size:14px;border-radius:8px}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.6;cursor:progress}
+.nav .btn.primary{margin-left:auto}
+
+/* Revisión */
+.rev{display:flex;flex-direction:column}
+.revsec{padding:16px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.revsec:first-child{border-top:0}
+.revhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.revhead h3{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:17px;margin:0}
+dl{margin:0;display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:6px 16px;font-size:15px}
+dt{color:var(--muted)}
+dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+@media (max-width:460px){dl{grid-template-columns:1fr;gap:0}dd{margin-bottom:8px}}
+.empty{color:var(--muted);font-size:14px;font-style:italic}
+
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.photos div{border:1px dashed var(--line);border-radius:12px;padding:14px 8px;text-align:center;font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:16px}
+.photos svg{display:block;margin:0 auto 6px;width:34px;height:52px}
+.photos small{display:block;font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400;color:var(--muted);font-size:13px}
+.note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:15px}
+.note ul{margin:6px 0 0;padding-left:18px}
+.callout{background:var(--warn-soft);color:var(--ink);border-radius:12px;padding:14px 16px;font-size:15px}
+.done{text-align:center;padding:34px 22px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.check{width:64px;height:64px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center}
+.done h2{font-size:34px}
+.done p{margin:0;color:var(--muted);max-width:44ch}
+#summary{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;min-height:200px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.actions .btn{flex:1 1 200px}
+.toast{font-size:14px;color:var(--muted);min-height:20px}
+
+/* Panel del coach */
+.coach .cardbody{gap:12px}
+.resp{display:flex;align-items:center;gap:12px;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;flex-wrap:wrap}
+.resp b{font-size:16px}
+.resp small{color:var(--muted);display:block;font-variant-numeric:tabular-nums}
+.pill{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;border-radius:999px;padding:3px 10px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.wip{background:var(--warn-soft);color:var(--warn)}
+.resp .r{display:flex;gap:8px;align-items:center}
+.shots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.shot{border:1px dashed var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.shot.ok{border-style:solid;border-color:var(--ok)}
+.shot.err{border-color:var(--danger)}
+.frame{width:100%;aspect-ratio:3/4;border-radius:8px;background:var(--bg);overflow:hidden;display:grid;place-items:center;color:var(--muted)}
+.frame img{width:100%;height:100%;object-fit:cover;display:block}
+.frame svg{width:42%;height:auto}
+.shot b{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:17px;line-height:1}
+.shot small{color:var(--muted);font-size:13px;line-height:1.3}
+.upl{position:relative;width:100%;overflow:hidden}
+.upl input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;font-size:0}
+.upl:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.ststat{font-size:13px;font-weight:600;min-height:18px}
+.ststat.ok{color:var(--ok)}.ststat.err{color:var(--danger)}.ststat.busy{color:var(--muted)}
+.tips{margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px}
+.outfit{display:flex;gap:10px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:15px}
+.outfit b{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--accent);white-space:nowrap}
+@media (max-width:420px){.shot{padding:8px}.shot small{display:none}.upl{padding-inline:6px}}
+footer{color:var(--muted);font-size:13px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.card{animation:in .28s ease-out}@keyframes in{from{transform:translateY(8px)}to{transform:none}}}
+</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="band gut">
+  <div class="col">
+    <div class="toprow">
+      <div class="eyebrow"><b>Check de seguimiento</b> · Entrenamiento y nutrición</div>
+      <span class="savepill" id="savepill"><i></i><span id="savetext">Guardado en este dispositivo</span></span>
+    </div>
+    <h1>Tu check de <em>esta semana</em></h1>
+    <p class="lede">Con esto tu coach ajusta tu plan para la siguiente semana. Si no sabes algún dato, déjalo en blanco; solo lo marcado con <span style="color:var(--accent)">*</span> es obligatorio.</p>
+    <div class="meta"><span><b>5 min</b>aproximado</span><span><b>7</b>secciones</span><span><b>100%</b>confidencial</span></div>
+  </div>
+</div>
+
+<div class="progress gut" aria-label="Progreso">
+  <div class="col">
+    <div class="bars" id="bars"></div>
+    <div class="steplabel"><b id="stepname">Datos</b><span id="stepcount">Paso 1 de 7</span></div>
+  </div>
+</div>
+
+<main class="gut">
+  <div class="col">
+    <form id="form" novalidate></form>
+    <footer>Tus respuestas solo las ve tu coach.</footer>
+  </div>
+</main>
+
+<script>
+const DAYS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+const S=[
+ {name:"Tu reporte",intro:"Este check es lo que tu coach usa para ajustar tu plan. Te toma unos 5 minutos.",fields:[
+  {id:"nombre",t:"text",l:"Nombre completo",req:1,s:"Nombre"},
+  {id:"fecha",t:"text",l:"¿Qué día te pesaste?",req:1,h:"Por ejemplo: viernes 21 de noviembre",s:"Día del pesaje"},
+  {id:"semana",t:"text",l:"¿Qué semana de tu plan llevas?",h:"Aproximado está bien",s:"Semana del plan"}
+ ]},
+ {name:"Medidas",intro:"Pésate en ayunas, después de ir al baño y siempre en la misma báscula. La cinta va pegada a la piel, sin apretar.",fields:[
+  {grid:[
+   {id:"peso",t:"num",l:"Peso",u:"kg",req:1,s:"Peso",step:"0.1"},
+   {id:"cintura",t:"num",l:"Cintura",u:"cm",h:"A la altura del ombligo, sin meter el abdomen",s:"Cintura (ombligo)",step:"0.5"}
+  ]},
+  {id:"cadera",t:"num",l:"Cadera",u:"cm",h:"Opcional. En la parte más ancha de los glúteos",s:"Cadera",step:"0.5"},
+  {id:"ayunas",t:"radio",l:"¿Te pesaste en ayunas y después del baño?",req:1,s:"Pesaje en ayunas",o:["Sí","No","No me acuerdo"]},
+  {id:"diaayer",t:"radio",l:"¿Qué tipo de día fue el de ayer?",h:"El peso de la mañana depende mucho de esto",s:"Día previo al pesaje",o:["Alto en carbohidrato","Base","Déficit o descanso","Comida libre","Mi plan no usa tipos de día","No sé"]},
+  {id:"ciclo",t:"radio",l:"Si menstrúas, ¿en qué parte del ciclo estás?",h:"Cambia la retención de agua y cómo se lee la báscula",s:"Fase del ciclo",o:["Menstruando","Primera mitad del ciclo","Mitad del ciclo","Días previos a la regla","No menstrúo o no aplica","Prefiero no decir"]}
+ ]},
+ {name:"Cómo te fue con el plan",intro:"Sé honesto: esto no se califica. Un dato real sirve mucho más que uno perfecto.",fields:[
+  {id:"adherencia",t:"scale",l:"¿Qué tan apegado estuviste al plan de comida?",req:1,s:"Adherencia (1–5)",lo:"Me costó mucho",hi:"Al pie de la letra"},
+  {id:"pico",t:"radio",l:"¿Comiste algo fuera del plan?",s:"Comió fuera del plan",o:["No","Una o dos veces","Varias veces","Casi todos los días"]},
+  {id:"quepico",show:a=>a.pico&&a.pico!=="No",t:"area",l:"¿Qué fue y en qué momento?",h:"Sin rodeos, esto ayuda a ajustar",s:"Qué comió fuera"},
+  {id:"libre",t:"radio",l:"¿Usaste tu comida libre?",s:"Comida libre",o:["Sí, una vez","No la usé","Más de una vez","Mi plan no incluye comida libre"]},
+  {id:"pesar",t:"radio",l:"¿Pesaste tus porciones?",s:"Pesó porciones",o:["Siempre","Casi siempre","A veces","No las pesé"]},
+  {id:"agua",t:"radio",l:"¿Cuánta agua tomaste al día?",s:"Agua",o:["Menos de 1 L","1 a 2 L","2 a 3 L","Más de 3 L"]},
+  {id:"suplementos",t:"radio",l:"¿Tomaste tus suplementos como vienen en el plan?",s:"Suplementos",o:["Sí, completos","Me salté algunos","No los tomé","Mi plan no lleva suplementos"]}
+ ]},
+ {name:"Entrenamiento",intro:"Con esto vemos si el volumen y la intensidad van bien o hay que moverlos.",fields:[
+  {id:"sesiones",t:"radio",l:"¿Cuántas sesiones completaste de las que marca tu plan?",req:1,s:"Sesiones completadas",o:["Todas","Me faltó 1","Me faltaron 2","Me faltaron 3 o más"]},
+  {id:"dias",t:"check",l:"¿Qué días entrenaste?",cls:"days",s:"Días que entrenó",o:DAYS},
+  {id:"fuerza",t:"radio",l:"¿Cómo va tu fuerza?",req:1,s:"Fuerza",o:["Subió","Se mantuvo","Bajó","No la registré"]},
+  {id:"fuerzadonde",t:"text",l:"¿En qué ejercicios lo notaste?",s:"Dónde notó la fuerza"},
+  {id:"cardio",t:"radio",l:"¿Hiciste el cardio indicado?",s:"Cardio",o:["Todo","Una parte","Nada","Mi plan no lleva cardio"]},
+  {id:"pasos",t:"radio",l:"Pasos promedio al día",s:"Pasos",o:["Menos de 5,000","5,000 a 8,000","8,000 a 12,000","Más de 12,000","No los mido"]},
+  {id:"molestias",t:"area",l:"¿Alguna molestia o dolor al entrenar?",h:"Dónde, en qué ejercicio y qué tan fuerte",s:"Molestias"}
+ ]},
+ {name:"Cómo te sentiste",intro:"El descanso, el hambre y el estrés deciden tanto como la dieta.",fields:[
+  {id:"hambre",t:"scale",l:"Nivel de hambre",s:"Hambre (1–5)",lo:"Nada",hi:"Mucha"},
+  {id:"cuandohambre",show:a=>+a.hambre>=4,t:"text",l:"¿En qué momento te dio más hambre?",h:"Días y horas, si lo notaste",s:"Cuándo le dio hambre"},
+  {id:"energia",t:"scale",l:"Energía en los entrenos",s:"Energía (1–5)",lo:"Muy baja",hi:"Muy alta"},
+  {id:"fatiga",t:"scale",l:"Fatiga general",s:"Fatiga (1–5)",lo:"Muy baja",hi:"Muy alta"},
+  {id:"estres",t:"scale",l:"Nivel de estrés",s:"Estrés (1–5)",lo:"Muy bajo",hi:"Muy alto"},
+  {id:"sueno",t:"radio",l:"¿Cuántas horas dormiste en promedio?",s:"Sueño",o:["Menos de 6 h","6 a 7 h","7 a 8 h","Más de 8 h"]},
+  {id:"digestion",t:"radio",l:"¿Cómo anduvo tu digestión?",s:"Digestión",o:["Bien","Regular","Mal"]},
+  {id:"animo",t:"scale",l:"¿Cómo te sentiste de ánimo?",s:"Ánimo (1–5)",lo:"Muy bajo",hi:"Muy bien"}
+ ]},
+ {name:"Esta semana",intro:"Lo que se salió de lo normal explica muchas veces lo que marca la báscula.",fields:[
+  {id:"eventos",t:"check",l:"¿Pasó algo fuera de lo normal?",h:"Puedes elegir varias",s:"Eventos de la semana",o:["Nada fuera de lo normal","Viaje o fuera de casa","Fiesta o evento social","Me enfermé","Cambio de horario de trabajo","Más estrés de lo normal","Menos sueño de lo normal"]},
+  {id:"cambiomed",t:"radio",l:"¿Hubo algún cambio en medicamentos o suplementos?",s:"Cambio en medicamentos",o:["No","Sí"]},
+  {id:"cualcambio",show:a=>a.cambiomed==="Sí",t:"area",l:"¿Cuál fue el cambio y desde cuándo?",s:"Cuál cambio"},
+  {id:"dudas",t:"area",l:"Dudas o algo que quieras cambiar del plan",s:"Dudas"},
+  {id:"comentarios",t:"area",l:"¿Algo más que tu coach deba saber?",s:"Comentarios"}
+ ]},
+ {name:"Fotos",photos:1,intro:"Tres fotos de cuerpo completo, con la misma luz y las mismas poses que la vez pasada. Así se puede comparar de verdad."},
+ {name:"Revisar",final:1}
+];
+const LAST=S.length-1;
+
+/* ---------- Estado ---------- */
+/* URL de la aplicación web de Apps Script (Implementar > Aplicación web). Vacío = modo WhatsApp. */
+const ENDPOINT="";
+
+const KEY="check-seguimiento-v1";
+const newId=()=>{try{return crypto.randomUUID()}catch(e){return "id-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,12)}};
+let st={}, cur=0, reached=0, sent=false, sentAt=null, view="form", rid=newId();
+try{const d=JSON.parse(localStorage.getItem(KEY)||"{}"); st=d.a||{}; reached=+(d.r||0); sent=!!d.s; sentAt=d.t||null; if(d.id) rid=d.id}catch(e){}
+const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify({a:st,r:reached,s:sent,t:sentAt,id:rid}))}catch(e){}};
+let cloud=/^https:\/\/script\.google\.com\//.test(ENDPOINT), timer=null;
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const vis=f=>!f.show||f.show(st);
+const flat=sec=>sec.fields?sec.fields.flatMap(f=>f.grid?f.grid:[f]).filter(vis):[];
+const hasCond=sec=>!!sec.fields&&sec.fields.flatMap(f=>f.grid?f.grid:[f]).some(f=>f.show);
+const SHOTS=[{k:"frente",n:"Frente",d:"Brazos relajados a los lados"},{k:"perfil",n:"Perfil",d:"Lado derecho, brazos relajados"},{k:"espalda",n:"Espalda",d:"Talones juntos"}];
+const SIL={
+ frente:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>',
+ perfil:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="12" y="12" width="10" height="20" rx="5"/><rect x="15" y="13" width="4" height="17" rx="2"/><rect x="13" y="30" width="7" height="21" rx="3"/></svg>',
+ espalda:'<svg viewBox="0 0 34 52" fill="currentColor" opacity=".45"><circle cx="17" cy="6" r="5"/><rect x="10" y="12" width="14" height="20" rx="6"/><rect x="5" y="13" width="4" height="17" rx="2"/><rect x="25" y="13" width="4" height="17" rx="2"/><rect x="11" y="30" width="5" height="21" rx="2.5"/><rect x="18" y="30" width="5" height="21" rx="2.5"/></svg>'};
+const thumbs={}, upl={}, pending={};
+const fotosOk=()=>SHOTS.filter(x=>st.fotos&&st.fotos[x.k]).length;
+const $=id=>document.getElementById(id);
+const fmtVal=(f,v)=>{if(Array.isArray(v))v=v.join(", ");v=(v??"").toString().trim();if(!v)return"";return f.u==="%"?v+"%":f.u?v+" "+f.u:v};
+
+function setPill(kind,text){const p=$("savepill");p.className="savepill "+(kind||"");$("savetext").textContent=text}
+
+/* ---------- Campos ---------- */
+function fieldHTML(f){
+  const req=f.req?'<span class="req">*</span>':"";
+  const hint=f.h?`<div class="hint">${esc(f.h)}</div>`:"";
+  const v=st[f.id]; let inner="";
+  if(f.t==="text") inner=`<input type="text" id="${f.id}" name="${f.id}" value="${esc(v||"")}" autocomplete="off">`;
+  if(f.t==="num") inner=`<div class="unit"><input type="number" inputmode="decimal" step="${f.step||1}" min="0" id="${f.id}" name="${f.id}" value="${esc(v||"")}"><span>${f.u}</span></div>`;
+  if(f.t==="area") inner=`<textarea id="${f.id}" name="${f.id}">${esc(v||"")}</textarea>`;
+  if(f.t==="radio"||f.t==="check"){
+    const type=f.t==="radio"?"radio":"checkbox";
+    inner=`<div class="opts ${f.cls||""}" role="${type==="radio"?"radiogroup":"group"}" aria-labelledby="${f.id}-l">`+f.o.map((o,i)=>{
+      const on=type==="radio"?v===o:(Array.isArray(v)&&v.includes(o));
+      return `<label class="opt"><input type="${type}" id="${f.id}-${i}" name="${f.id}" value="${esc(o)}"${on?" checked":""}><span>${esc(o)}</span></label>`}).join("")+`</div>`;
+  }
+  if(f.t==="scale") inner=`<div class="scale"><div class="opts" role="radiogroup" aria-labelledby="${f.id}-l">`+[1,2,3,4,5].map(n=>`<label class="opt"><input type="radio" id="${f.id}-${n}" name="${f.id}" value="${n}"${v==String(n)?" checked":""}><span>${n}</span></label>`).join("")+`</div><small><span>${esc(f.lo)}</span><span>${esc(f.hi)}</span></small></div>`;
+  const lab=(f.t==="text"||f.t==="num"||f.t==="area")?`<label class="lab" for="${f.id}">${esc(f.l)}${req}</label>`:`<div class="lab" id="${f.id}-l">${esc(f.l)}${req}</div>`;
+  return `<div class="field" data-f="${f.id}">${lab}${hint}${inner}<div class="err" hidden></div></div>`;
+}
+
+/* ---------- Revisión / resumen ---------- */
+function reviewHTML(a,editable){
+  return `<div class="rev">`+S.slice(0,LAST).map((sec,i)=>{
+    const rows=sec.photos?SHOTS.map(x=>`<dt>${x.n}</dt><dd>${a.fotos&&a.fotos[x.k]?"Subida ✓":"Pendiente"}</dd>`).join(""):flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`<dt>${esc(f.s)}</dt><dd>${esc(v)}</dd>`:""}).join("");
+    return `<div class="revsec"><div class="revhead"><h3>${esc(sec.name)}</h3>${editable?`<button type="button" class="btn small" data-edit="${i}">Editar</button>`:""}</div>${rows?`<dl>${rows}</dl>`:`<div class="empty">Sin respuestas</div>`}</div>`;
+  }).join("")+`</div>`;
+}
+function summary(a){
+  const L=[`*CHECK DE SEGUIMIENTO*${a.nombre?" · "+String(a.nombre).trim():""}`];
+  S.slice(0,LAST).forEach(sec=>{
+    const rows=flat(sec).map(f=>{const v=fmtVal(f,a[f.id]);return v?`${f.s}: ${v}`:null}).filter(Boolean);
+    if(rows.length){L.push("",`*${sec.name.toUpperCase()}*`,...rows)}
+  });
+  L.push("","*FOTOS*","Las mando por este chat.");
+  return L.join("\n");
+}
+function photosHTML(){
+  const sx=st.sexo;
+  const outfit=sx==="Mujer"?"Short y top deportivo":sx==="Hombre"?"Bóxer o short corto, sin camiseta":"Mujeres: short y top deportivo. Hombres: bóxer, sin camiseta.";
+  const tips=`<ul class="tips"><li>Por la mañana, en ayunas</li><li>Luz de frente y fondo liso</li><li>Cuerpo completo, de la cabeza a los pies</li><li>Celular a la altura del pecho, a unos 2 metros: pide ayuda o usa el temporizador</li><li>Postura relajada, sin posar ni meter el abdomen</li>${sx==="Mujer"?"<li>Cabello recogido</li>":""}</ul>`;
+  const head=`<div class="outfit"><b>Ropa</b><span>${outfit}</span></div>${tips}`;
+  if(!cloud) return head+`<div class="callout">Mándale estas tres fotos a tu coach por WhatsApp.</div>`;
+  return head+`<div class="shots">`+SHOTS.map(x=>{
+    const done=st.fotos&&st.fotos[x.k], u=upl[x.k];
+    const cls=u==="err"||u==="fmt"?"err":done?"ok":"";
+    const stat=u==="busy"?'<span class="ststat busy">Subiendo…</span>':u==="err"?`<button type="button" class="btn small" data-retry="${x.k}">Reintentar</button><span class="ststat err">No se subió</span>`:u==="fmt"?'<span class="ststat err">Formato no compatible. Toma la foto con la cámara.</span>':done?'<span class="ststat ok">Subida ✓</span>':'<span class="ststat"></span>';
+    return `<div class="shot ${cls}"><div class="frame">${thumbs[x.k]?`<img src="${thumbs[x.k]}" alt="Foto de ${x.n.toLowerCase()}">`:SIL[x.k]}</div><b>${x.n}</b><small>${x.d}</small>
+      <span class="btn small upl">${done?"Cambiar":"Subir foto"}<input type="file" accept="image/*" data-up="${x.k}" aria-label="Subir foto de ${x.n.toLowerCase()}"${u==="busy"?" disabled":""}></span>${stat}</div>`}).join("")+`</div><div class="hint" style="margin-top:0">Si prefieres, puedes mandarlas después por WhatsApp.</div>`;
+}
+
+/* ---------- Render ---------- */
+function render(){
+  const sec=S[cur]; let html="";
+  if(view==="done"){
+    html=`<div class="card"><div class="done">
+      <div class="check"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h2>¡Listo${st.nombre?", "+esc(String(st.nombre).trim().split(/\s+/)[0]):""}!</h2>
+      <p>Tu coach ya recibió tus respuestas${fotosOk()===3?" y tus fotos":""}. Con esto ajusta tu plan para la siguiente semana.</p></div>
+      <div class="cardbody" style="padding-top:0">${fotosOk()<3?`<div class="note">Te ${3-fotosOk()===1?"faltó 1 foto":"faltaron "+(3-fotosOk())+" fotos"}. Mándala${3-fotosOk()===1?"":"s"} a tu coach por WhatsApp o súbela${3-fotosOk()===1?"":"s"} desde "Revisar o corregir".</div>`:""}
+      <button type="button" class="btn" id="reedit">Revisar o corregir mis respuestas</button></div></div>`;
+  } else if(sec.final){
+    const sendBlock=cloud
+      ?`<button type="button" class="btn primary big" id="send">${sent?"Actualizar respuestas enviadas":"Enviar a mi coach"}</button><div class="toast" id="toast" aria-live="polite"></div>`
+      :`<div class="callout">Envía tus respuestas a tu coach por WhatsApp. Si el botón no abre WhatsApp, cópialas y pégalas en el chat.</div>
+        <textarea id="summary" readonly aria-label="Resumen">${esc(summary(st))}</textarea>
+        <div class="actions"><a class="btn primary" href="https://wa.me/?text=${encodeURIComponent(summary(st))}" target="_blank" rel="noopener">Enviar por WhatsApp</a><button type="button" class="btn" id="copy">Copiar respuestas</button></div>
+        <div class="toast" id="toast" aria-live="polite"></div>`;
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(LAST+1).padStart(2,"0")}</span><div><h2>Revisa y envía</h2><p>Confirma que todo esté bien. Puedes editar cualquier sección.</p></div></div>
+      <div class="cardbody" style="padding-bottom:6px"></div>${reviewHTML(st,true)}
+      <div class="cardbody" style="border-top:1px solid var(--line)">${sendBlock}</div></div>
+      <div class="nav"><button type="button" class="btn" id="back">Atrás</button></div>`;
+  } else if(sec.photos){
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(cur+1).padStart(2,"0")}</span><div><h2>Fotos de esta semana</h2><p>${esc(sec.intro)}</p></div></div><div class="cardbody">${photosHTML()}<div class="err" id="photoerr" hidden></div></div></div>
+      <div class="nav"><button type="button" class="btn" id="back">Atrás</button><button type="submit" class="btn primary">Revisar respuestas</button></div>`;
+  } else {
+    html=`<div class="card"><div class="cardhead"><span class="num">${String(cur+1).padStart(2,"0")}</span><div><h2>${esc(sec.name)}</h2>${sec.intro?`<p>${esc(sec.intro)}</p>`:""}</div></div><div class="cardbody">`+
+      sec.fields.filter(vis).map(f=>f.grid?`<div class="grid2">${f.grid.filter(vis).map(fieldHTML).join("")}</div>`:fieldHTML(f)).join("")+`</div></div>
+      <div class="nav">${cur>0?'<button type="button" class="btn" id="back">Atrás</button>':""}<button type="submit" class="btn primary">${cur===LAST-1?"Revisar respuestas":"Siguiente"}</button></div>`;
+  }
+  form.innerHTML=html;
+  $("stepname").textContent=view==="done"?"Enviado":sec.name;
+  $("stepcount").textContent=view==="done"?"Completo":`Paso ${cur+1} de ${S.length}`;
+  $("bars").innerHTML=S.map((s,i)=>`<button type="button" aria-label="${s.name}" class="${view==="done"?"done":i===cur?"on":i<=reached?"done":""}"${i>reached||view==="done"?" disabled":""} data-go="${i}"></button>`).join("");
+}
+
+function validate(){
+  if(S[cur].photos&&Object.values(upl).includes("busy")){const e=$("photoerr");if(e){e.hidden=false;e.textContent="Espera a que terminen de subir tus fotos."}return false}
+  let ok=true, first=null;
+  flat(S[cur]).forEach(f=>{
+    const el=form.querySelector(`[data-f="${f.id}"]`); if(!el) return;
+    const v=st[f.id]; const empty=!v||(Array.isArray(v)&&!v.length)||!String(v).trim();
+    const err=el.querySelector(".err");
+    if(f.req&&empty){ok=false;el.classList.add("bad");err.hidden=false;err.textContent=f.t==="check"?"Elige al menos una opción.":f.t==="radio"?"Elige una opción.":"Necesitamos este dato para leer bien tu avance.";first=first||el}
+    else{el.classList.remove("bad");err.hidden=true}
+  });
+  if(first) first.scrollIntoView({behavior:"smooth",block:"center"});
+  return ok;
+}
+function go(i){
+  view="form"; cur=Math.max(0,Math.min(LAST,i));
+  if(cur>reached) reached=cur;
+  saveLocal(); queueCloud(); render(); window.scrollTo({top:0});
+}
+
+/* ---------- Guardado en línea (Google Sheets vía Apps Script) ---------- */
+function payload(){const ans={};S.forEach(sec=>flat(sec).forEach(f=>{if(st[f.id]!=null)ans[f.id]=st[f.id]}));return JSON.stringify({id:rid,answers:ans,paso:Math.min(reached+1,S.length)+" de "+S.length,enviado:sent})}
+function queueCloud(){
+  if(!cloud) return;
+  setPill("busy","Guardando…");
+  clearTimeout(timer); timer=setTimeout(pushCloud,600);
+}
+async function pushCloud(){
+  if(!cloud) return false;
+  for(let i=0;i<2;i++){
+    try{
+      const r=await fetch(ENDPOINT,{method:"POST",body:payload()});
+      const j=await r.json();
+      if(j&&j.ok){setPill("ok","Guardado");return true}
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,900+Math.random()*700));
+  }
+  setPill("","Guardado en este dispositivo");
+  return false;
+}
+
+/* ---------- Fotos ---------- */
+function shrink(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const max=2560, k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement("canvas"); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg",0.92));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("formato"))};
+    img.src=url;
+  });
+}
+async function uploadPhoto(k,file){
+  upl[k]="busy"; render();
+  let data;
+  try{data=await shrink(file)}catch(e){upl[k]="fmt"; render(); return}
+  thumbs[k]=data; pending[k]=data;
+  await sendPhoto(k);
+}
+async function sendPhoto(k){
+  const data=pending[k]; if(!data) return;
+  upl[k]="busy"; render();
+  let ok=false;
+  for(let i=0;i<4&&!ok;i++){
+    if(i) await new Promise(r=>setTimeout(r,1500*i));
+    try{
+      const r=await fetch(ENDPOINT,{method:"POST",body:JSON.stringify({accion:"foto",id:rid,nombre:String(st.nombre||"").trim(),tipo:k,data:data.split(",")[1]})});
+      const j=await r.json(); ok=!!(j&&j.ok);
+    }catch(e){}
+  }
+  if(ok){st.fotos=Object.assign({},st.fotos,{[k]:true}); upl[k]="ok"; delete pending[k]; saveLocal()}
+  else upl[k]="err";
+  if(S[cur].photos&&view==="form") render();
+}
+
+/* ---------- Eventos ---------- */
+const form=$("form");
+form.addEventListener("input",e=>{
+  const t=e.target; if(!t.name||t.readOnly||t.type==="file") return;
+  if(t.type==="checkbox") st[t.name]=[...form.querySelectorAll(`input[name="${t.name}"]:checked`)].map(x=>x.value);
+  else st[t.name]=t.value;
+  saveLocal();
+  const fld=t.closest(".field"); if(fld&&fld.classList.contains("bad")){fld.classList.remove("bad");fld.querySelector(".err").hidden=true}
+  if((t.type==="radio"||t.type==="checkbox")&&hasCond(S[cur])){
+    const id=t.id; render();
+    const el=document.getElementById(id); if(el) el.focus({preventScroll:true});
+  }
+});
+form.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.up&&t.files&&t.files[0]){const f=t.files[0];t.value="";uploadPhoto(t.dataset.up,f)}});
+form.addEventListener("submit",e=>{e.preventDefault(); if(validate()) go(cur+1)});
+form.addEventListener("click",async e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.retry){sendPhoto(t.dataset.retry);return}
+  if(t.id==="back") go(cur-1);
+  if(t.dataset.edit!==undefined) go(+t.dataset.edit);
+  if(t.id==="reedit"){view="form";cur=LAST;render();window.scrollTo({top:0})}
+  if(t.id==="copy"){
+    const ta=$("summary"), msg=$("toast");
+    const fb=()=>{ta.focus();ta.select();msg.textContent="Texto seleccionado. Cópialo con el menú de tu teléfono o Ctrl+C."};
+    try{navigator.clipboard.writeText(ta.value).then(()=>msg.textContent="Copiado. Pégalo en el chat con tu coach.",fb)}catch(_){fb()}
+  }
+  if(t.id==="send"){
+    const missing=S.slice(0,LAST).findIndex(sec=>flat(sec).some(f=>f.req&&(!st[f.id]||(Array.isArray(st[f.id])&&!st[f.id].length)||!String(st[f.id]).trim())));
+    if(missing>=0){go(missing);setTimeout(validate,50);return}
+    t.disabled=true; t.textContent="Enviando…";
+    const prev=[sent,sentAt]; sent=true; sentAt=sentAt||Date.now();
+    clearTimeout(timer);
+    if(await pushCloud()){saveLocal();view="done";render();window.scrollTo({top:0})}
+    else{[sent,sentAt]=prev; cloud=false; render(); const m=$("toast"); if(m) m.textContent="No hubo conexión con el servidor. Envía tus respuestas por WhatsApp con el botón de arriba."}
+  }
+});
+$("bars").addEventListener("click",e=>{const b=e.target.closest("[data-go]"); if(b&&!b.disabled) go(+b.dataset.go)});
+
+/* ---------- Arranque ---------- */
+if(sent) view="done";
+render();
+if(cloud) setPill("ok", reached>0?"Guardado":"Se guarda automáticamente");
+</script>
+
+</body>
+</html>
